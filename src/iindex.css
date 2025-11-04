@@ -1,0 +1,122 @@
+/* Reset and basic styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #004080;
+    color: white;
+}
+
+header .logo img {
+    height: 60px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: white;
+    padding: 5px 10px;
+    transition: all 0.3s ease;
+}
+
+nav ul li a:hover,
+nav ul li a.active {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+/* Banner */
+.banner {
+    background: url('banner.jpg') no-repeat center center/cover;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+}
+
+.banner h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.banner button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    background-color: #ff9900;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.banner button:hover {
+    background-color: #cc7a00;
+}
+
+/* Three columns */
+.features {
+    display: flex;
+    gap: 20px;
+    padding: 40px;
+    justify-content: center;
+    background-color: white;
+}
+
+.features article {
+    flex: 1;
+    text-align: center;
+    padding: 20px;
+    background-color: #e6f0ff;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.features article:hover {
+    transform: translateY(-10px);
+}
+
+.features img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+/* Footer */
+footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #004080;
+    color: white;
+}
+
+footer .footer-left img {
+    height: 40px;
+}
+
+footer .footer-right p {
+    align-self: center;
+}

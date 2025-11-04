@@ -5,10 +5,14 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { randomUUID } from "crypto";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+const SECRET = "YOUR_SECRET_KEY"; // replace with env variable in production
 
 // File setup
 const __filename = fileURLToPath(import.meta.url);
@@ -20,29 +24,55 @@ function loadData() {
   try {
     return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
   } catch {
-    return { donations: [], requests: [], deliveries: [], feedbacks: [] };
+    return { users: [], donations: [], requests: [], deliveries: [], feedbacks: [] };
   }
 }
 
+let { users, donations, requests, deliveries, feedbacks } = loadData();
+
 function saveData() {
-  fs.writeFileSync(DATA_FILE, JSON.stringify({ donations, requests, deliveries, feedbacks }, null, 2));
+  fs.writeFileSync(
+    DATA_FILE,
+    JSON.stringify({ users, donations, requests, deliveries, feedbacks }, null, 2)
+  );
 }
 
-// --- Load data at startup ---
-let { donations, requests, deliveries, feedbacks } = loadData();
+// ---------------- Auth Routes ----------------
+app.post("/api/register", async (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) return res.status(400).json({ message: "All fields required" });
 
-// ---------------- API Routes ----------------
+  const existing = users.find(u => u.email === email);
+  if (existing) return res.status(409).json({ message: "Email already exists" });
 
-// ---- Donations ----
+  const hashed = await bcrypt.hash(password, 10);
+  const newUser = { id: "user_" + randomUUID(), name, email, password: hashed };
+  users.push(newUser);
+  saveData();
+
+  res.json({ success: true, message: "User registered successfully", user: { id: newUser.id, name, email } });
+});
+
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+  const user = users.find(u => u.email === email);
+  if (!user) return res.status(401).json({ message: "Invalid email or password" });
+
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) return res.status(401).json({ message: "Invalid email or password" });
+
+  const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: "1h" });
+  res.json({ success: true, token, user: { id: user.id, name: user.name, email: user.email } });
+});
+
+// ---------------- Donations ----------------
 app.post("/api/donations", (req, res) => {
   const item = { id: "don_" + randomUUID(), approved: false, matchedRequestId: null, ...req.body };
   donations.push(item);
   saveData();
   res.json(item);
 });
-
 app.get("/api/donations", (req, res) => res.json(donations));
-
 app.patch("/api/donations/:id", (req, res) => {
   const d = donations.find(x => x.id === req.params.id);
   if (!d) return res.status(404).json({ error: "Not found" });
@@ -51,16 +81,14 @@ app.patch("/api/donations/:id", (req, res) => {
   res.json(d);
 });
 
-// ---- Requests ----
+// ---------------- Requests ----------------
 app.post("/api/requests", (req, res) => {
   const item = { id: "req_" + randomUUID(), approved: false, delivered: false, ...req.body };
   requests.push(item);
   saveData();
   res.json(item);
 });
-
 app.get("/api/requests", (req, res) => res.json(requests));
-
 app.patch("/api/requests/:id", (req, res) => {
   const r = requests.find(x => x.id === req.params.id);
   if (!r) return res.status(404).json({ error: "Not found" });
@@ -70,7 +98,7 @@ app.patch("/api/requests/:id", (req, res) => {
   res.json(r);
 });
 
-// ---- Deliveries ----
+// ---------------- Deliveries ----------------
 app.post("/api/deliveries", (req, res) => {
   const { requestId, donationId, coordinator } = req.body;
   const delivery = { id: "del_" + randomUUID(), requestId, donationId, coordinator, status: "Assigned" };
@@ -78,9 +106,7 @@ app.post("/api/deliveries", (req, res) => {
   saveData();
   res.json(delivery);
 });
-
 app.get("/api/deliveries", (req, res) => res.json(deliveries));
-
 app.patch("/api/deliveries/:id", (req, res) => {
   const del = deliveries.find(x => x.id === req.params.id);
   if (!del) return res.status(404).json({ error: "Not found" });
@@ -93,16 +119,21 @@ app.patch("/api/deliveries/:id", (req, res) => {
   res.json(del);
 });
 
-// ---- Feedback ----
+// ---------------- Feedback ----------------
 app.post("/api/feedbacks", (req, res) => {
   const fb = { id: "fb_" + randomUUID(), ...req.body };
   feedbacks.push(fb);
   saveData();
   res.json(fb);
 });
-
 app.get("/api/feedbacks", (req, res) => res.json(feedbacks));
+
+// ---------------- Serve React Frontend ----------------
+app.use(express.static(path.join(__dirname, "../dist")));
+app.get(/.*/, (req, res) => {
+  res.sendFile(path.join(__dirname, "../dist/index.html"));
+});
 
 // ---------------- Start Server ----------------
 const PORT = 5000;
-app.listen(PORT, () => console.log(`✅ Backend API running at http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`✅ Fullstack app running at http://localhost:${PORT}`));
