@@ -23,6 +23,12 @@
       "name": "dhanush",
       "email": "dhanush1@gmail.com",
       "password": "$2b$10$80ft3jI0M5mdINbcs0qDaeknnVdFBkLn0ApxxVKkWw9qXQIPBGHwO"
+    },
+    {
+      "id": "user_e9c560d7-1199-4e01-9290-d7d1819e2cc7",
+      "name": "pranith",
+      "email": "prani111@gmail.com",
+      "password": "$2b$10$R/8iwkTY4J.nfYVw036PYu7Z64.B0SJCyrQd6UhgmHL/EmkshOAxy"
     }
   ],
   "donations": [
