@@ -39,3 +39,19 @@ export const listFeedbacks = () => http("/api/feedbacks");
 
 /* Utilities */
 export const resetState = () => http("/api/reset", { method: "POST" });
+// Call this to update delivery location on server (if backend supports it)
+export async function updateDeliveryLocation(deliveryId, lat, lon) {
+  try {
+    // attempt backend API (PATCH) — change URL if your backend expects different
+    const res = await fetch(`/api/deliveries/${deliveryId}/location`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lat, lon, ts: Date.now() }),
+    });
+    if (!res.ok) throw new Error("No backend endpoint");
+    return res.json();
+  } catch (err) {
+    // If backend not available, throw so calling code can fallback
+    throw err;
+  }
+}

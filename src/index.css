@@ -211,3 +211,17 @@ p {
   margin: 40px auto;
   padding: 20px;
 }
+.page {
+  animation: fadePage .35s ease;
+}
+
+@keyframes fadePage {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
